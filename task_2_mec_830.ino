@@ -5,7 +5,6 @@ const int in1 = 9;
 const int in2 = 10;
 const int in3 = 11;
 const int in4 = 12;
-int k = 0;
 int step_num = 0;
 int RECEIVER2 = 13;
 int button = 0;
@@ -46,33 +45,59 @@ void setup() {
 
   pinMode(2, INPUT_PULLUP);
   attachInterrupt(0, btn, FALLING);
-
-  //Servo Pins
-  //CHANGE SERVO ATTACH PIN TO SOMETHING ELSE.
+  
   servo.attach(5);
   servo.write(90);
+
+  Serial.begin(9600);
 }
 
 void loop() {
 
-  if (button == 1)
-  {
-    k = 0 ;
-    while (k < 2048) {
+  if (button == 1){
+    delay(1000);
+
+    forward(1950); 
+    delay(50);
+    right();
+    delay(50);
+    forward(1950);
+    delay(250);
+    left();
+    delay(50);
+    forward(1950);
+    
+    button = 0;
+  }
+  
+  Dist();
+  //forward
+  //right
+  //forward
+  //left 
+  //forward
+}
+
+void forward(int steps){
+   int k = 0;
+    while (k < steps) {
       OneStep(false);
       delay(2);
       k = k + 1;
     }
-    while (k != 0) {
-      OneStep(true);
-      delay(2);
-      k = k - 1;
-    }
-    k = 0;
-    button = 0;
-  }
 }
 
+void left(){
+  servo.write(35);
+  forward(1600);
+  servo.write(90);
+}
+
+void right(){
+  servo.write(145);
+  forward(1670);
+  servo.write(90);
+}
 
 void ServoMove(int Click) {
   //If button from remote is clicked, 0,1 position -- Select Type of Steering Movement
@@ -86,6 +111,7 @@ void ServoMove(int Click) {
     servo.write(Ang);
     delay(10);
   }
+  Dist();
 }
 
 void btn() {
@@ -102,14 +128,11 @@ void Dist() {
 
   duration = pulseIn(echoPin, HIGH);
   distance = duration * 0.034 / 2;
-  Serial.print(distance);
+  Serial.println(distance);
   if (distance == 1196) {
     distance = 0;
-
   }
 }
-
-
 
 //Stepper Motor Control Per step
 void OneStep(bool dir) {
