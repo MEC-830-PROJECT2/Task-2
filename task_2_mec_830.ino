@@ -10,8 +10,8 @@ int RECEIVER2 = 13;
 
 //initialize variables needed for
 int button = 0;
-float dist, wall;
-int left = 0, right = 0;
+float dist, wall = 14;
+int ileft = 0, iright = 0;
 
 //IR Receiver and Remote Initialization
 IRrecv irrecv(RECEIVER2);     // create instance of 'irrecv'
@@ -61,29 +61,38 @@ void loop() {
   if (button == 1) {
     delay(1000);
     while (button == 1) {
-      dist = distance();
+      dist = Dist();
+      Serial.println(dist);
       if ( dist > wall)
-        forward();
-      else if (dist < wall) {
+        forward(100);
+      else if (dist < wall) { 
         delay(500);
-        left()
-        distance();
+        left();
+        dist = Dist();
         if (dist < wall)
-          left = 1;
+          ileft = 1;
+        revleft();
         right();
-        right();
+        dist = Dist();
         if (dist < wall)
-          right = 1;
+          iright = 1;
       }
+      //delay(1500);
       // robot is currently facing right
-      if (left == 0 && right == 1) {
-        left();
+      if (ileft == 0 && iright == 1) {
+        revright();
         left();
       }
-      else if (left == 1 && right == 1)
+      else if (ileft == 1 && iright == 1){
+        revright();
         button = 0; // stops robot
-      left = 0;
-      right = 0;
+      }
+      //Serial.print(ileft);
+      //Serial.println(iright);
+            
+      ileft = 0;
+      iright = 0;
+      
     /*
     forward(1950); 
     delay(50);
@@ -107,18 +116,37 @@ void forward(int steps) {
     k = k + 1;
   }
 }
-/*
 
- */
+void backward(int steps) {
+  int k = steps;
+  while (k!=0){
+    OneStep(true);
+    delay(2);
+    k=k-1;
+  }
+}
+
 void left() {
   servo.write(35);
   forward(1600);
   servo.write(90);
 }
 
+void revleft() {
+  servo.write(35);
+  backward(1600);
+  servo.write(90);
+}
+
 void right() {
   servo.write(145);
   forward(1670);
+  servo.write(90);
+}
+
+void revright() {
+  servo.write(145);
+  backward(1600);
   servo.write(90);
 }
 
@@ -141,6 +169,7 @@ void btn() {
 }
 
 float Dist() {
+  int distance = 0;
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
 
@@ -150,7 +179,7 @@ float Dist() {
 
   duration = pulseIn(echoPin, HIGH);
   distance = duration * 0.034 / 2;
-  Serial.println(distance);
+  //Serial.println(distance);
   if (distance == 1196) {
     distance = 0;
   }
