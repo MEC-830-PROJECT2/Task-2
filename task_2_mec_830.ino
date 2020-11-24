@@ -7,7 +7,11 @@ const int in3 = 11;
 const int in4 = 12;
 int step_num = 0;
 int RECEIVER2 = 13;
+
+//initialize variables needed for
 int button = 0;
+float dist, wall;
+int left = 0, right = 0;
 
 //IR Receiver and Remote Initialization
 IRrecv irrecv(RECEIVER2);     // create instance of 'irrecv'
@@ -17,7 +21,7 @@ decode_results results;      // create instance of 'decode_results'
 const int trigPin = 6;
 const int echoPin = 8;
 long duration;
-double distance;
+
 
 //Servo Motor Variable Declaration
 Servo servo;
@@ -45,7 +49,7 @@ void setup() {
 
   pinMode(2, INPUT_PULLUP);
   attachInterrupt(0, btn, FALLING);
-  
+
   servo.attach(5);
   servo.write(90);
 
@@ -54,9 +58,33 @@ void setup() {
 
 void loop() {
 
-  if (button == 1){
+  if (button == 1) {
     delay(1000);
-
+    while (button == 1) {
+      dist = distance();
+      if ( dist > wall)
+        forward();
+      else if (dist < wall) {
+        delay(500);
+        left()
+        distance();
+        if (dist < wall)
+          left = 1;
+        right();
+        right();
+        if (dist < wall)
+          right = 1;
+      }
+      // robot is currently facing right
+      if (left == 0 && right == 1) {
+        left();
+        left();
+      }
+      else if (left == 1 && right == 1)
+        button = 0; // stops robot
+      left = 0;
+      right = 0;
+    /*
     forward(1950); 
     delay(50);
     right();
@@ -66,34 +94,29 @@ void loop() {
     left();
     delay(50);
     forward(1950);
-    
-    button = 0;
-  }
-  
-  Dist();
-  //forward
-  //right
-  //forward
-  //left 
-  //forward
-}
-
-void forward(int steps){
-   int k = 0;
-    while (k < steps) {
-      OneStep(false);
-      delay(2);
-      k = k + 1;
+    */
     }
+  }
 }
 
-void left(){
+void forward(int steps) {
+  int k = 0;
+  while (k < steps) {
+    OneStep(false);
+    delay(2);
+    k = k + 1;
+  }
+}
+/*
+
+ */
+void left() {
   servo.write(35);
   forward(1600);
   servo.write(90);
 }
 
-void right(){
+void right() {
   servo.write(145);
   forward(1670);
   servo.write(90);
@@ -111,14 +134,13 @@ void ServoMove(int Click) {
     servo.write(Ang);
     delay(10);
   }
-  Dist();
 }
 
 void btn() {
   button = 1;
 }
 
-void Dist() {
+float Dist() {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
 
@@ -132,6 +154,7 @@ void Dist() {
   if (distance == 1196) {
     distance = 0;
   }
+  return distance;
 }
 
 //Stepper Motor Control Per step
