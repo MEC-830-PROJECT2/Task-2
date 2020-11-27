@@ -8,10 +8,10 @@ const int in4 = 12;
 int step_num = 0;
 int RECEIVER2 = 13;
 
-//initialize variables needed for
-int button = 0;
-float dist, wall = 14;
-int ileft = 0, iright = 0;
+//initialize variables needed for task 2
+int button = 0; //button starts tasks 2
+float dist, wall = 14; //wall = distance when wall is detected (cm)
+int ileft = 0, iright = 0; //detects if there is a wall 
 
 //IR Receiver and Remote Initialization
 IRrecv irrecv(RECEIVER2);     // create instance of 'irrecv'
@@ -57,56 +57,59 @@ void setup() {
 }
 
 void loop() {
-
+  
+  // delays 1s before robot starts, prevents user from moving the robot backwards
   if (button == 1) {
     delay(1000);
+    
+    //moves until goal is reached at whichpoint button = 0
     while (button == 1) {
       dist = Dist();
       Serial.println(dist);
+      
+      //continues moving forward until a wall is sensed 
       if ( dist > wall)
         forward(100);
+      
+      //a wall is detected
       else if (dist < wall) { 
         delay(500);
-        left();
+        left(); // rotates left 90 deg
         dist = Dist();
+        
+        //checks if there is a wall on the left of the robot
         if (dist < wall)
           ileft = 1;
         revleft();
         right();
         dist = Dist();
+        
+        // checks if there is a wall on the right side of the robot
         if (dist < wall)
           iright = 1;
       }
-      //delay(1500);
       // robot is currently facing right
+      //
+      
+      //turns left if there's no wall on the left and a wall on the right
       if (ileft == 0 && iright == 1) {
         revright();
         left();
       }
+      
+      //stops if there is a wall on the left and the right
       else if (ileft == 1 && iright == 1){
         revright();
         button = 0; // stops robot
       }
-      //Serial.print(ileft);
-      //Serial.println(iright);
-            
+      
+      // resets wall detection variables
       ileft = 0;
       iright = 0;
-      
-    /*
-    forward(1950); 
-    delay(50);
-    right();
-    delay(50);
-    forward(1950);
-    delay(250);
-    left();
-    delay(50);
-    forward(1950);
-    */
     }
   }
 }
+
 
 void forward(int steps) {
   int k = 0;
@@ -126,24 +129,28 @@ void backward(int steps) {
   }
 }
 
+//turns left 90 deg
 void left() {
   servo.write(35);
   forward(1600);
   servo.write(90);
 }
 
+//undos a left turn
 void revleft() {
   servo.write(35);
   backward(1600);
   servo.write(90);
 }
 
+//turns right 90 deg
 void right() {
   servo.write(145);
   forward(1670);
   servo.write(90);
 }
 
+//undos a right 90 deg
 void revright() {
   servo.write(145);
   backward(1600);
